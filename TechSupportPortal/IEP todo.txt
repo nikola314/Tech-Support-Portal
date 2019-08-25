@@ -1,0 +1,48 @@
+IEP TODO:
+(done)	- create question view
+		- upload image
+(done)		- textarea for text instead of text input
+(done)	- question details view
+(done)		- place to respond
+(done)		- nice layout
+(done)	- move out timestamps from all forms
+(done)	- edit question view
+(done)	- lock question button
+	- buy tokens (paypal)
+	- hash passwords
+(done)	- block login if inactive
+(done)	- if question is locked - disable responses
+(done)	- agents and admin can unlock a question
+(done)	- cascade replies
+(done)	- votes - up and down arrow (reddit style) 
+	- client - open and close channels
+	- all questions of a channel view
+	- once closed channel cant be reopened
+		- channel - client that made it and n agents
+(done)	- login
+(done)	- register
+(done)	- status of a question is displayed by color
+(done)	- filter questions by category, if logged in -> by only those that user created created
+	- paging
+(done)	- question view containts that question and all responses
+(done)	- sort responses by time or votes
+(done)	- search for question
+	- show orders (of bought tokens)
+(done)	- lock qustion
+	- close and create channel
+Agent:
+(done)	- unlock qusetion
+	- show all open channels
+	- subscribe to a channel
+	- communication in a channel
+	- unsubscribe
+Admin:
+	- modify user data
+	- create new agents
+(done)	- unlock question 
+(done)	- delete question or response/reply
+	- /System:
+		- categories
+		- token packages
+		
+		vwdccqwcq

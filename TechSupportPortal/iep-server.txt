@@ -1,0 +1,5 @@
+name: iep-server
+admin login: nexynexy
+password: 1234qwer!@#$
+
+79a1.c1e1#e5
