@@ -1,0 +1,118 @@
+﻿@model TechSupportPortal.Models.Action
+@using TechSupportPortal.Models;
+@{
+    ViewBag.Title = "Question";
+
+    List<Response> responses = ViewBag.Responses;
+    var user = Session["user"] as TechSupportPortal.Models.Account;
+
+    bool isQuestion = false;
+    if (Model is Question)
+    {
+        isQuestion = true;
+    }
+}
+
+<div class="jumbotron">
+    @if (isQuestion)
+    {
+        <h1 class="display-3">@((Model as Question).Title)</h1>
+    }
+
+    <p class="lead">@Html.DisplayFor(model => model.Text)</p>
+    <hr class="my-4">
+    @if (user != null && ((isQuestion && (Model as Question).IsLocked == false) || !isQuestion))
+    {
+        <form method="post" action="~/Home/ReplyToQuestion">
+            <div class="form-group">
+                <textarea class="form-contl" rows="3" name="ResponseText" placeholder="Reply..." id="inputDefault" style="width:100%;"></textarea>
+                <button type="submit" class="btn btn-primary" style="float:right;">Reply</button>
+                <input type="text" hidden name="RespondingTo" value="@Model.ActionId" />
+            </div>
+        </form>
+    }
+    @{
+        if (user != null && user.AccountId == Model.AccountId)
+        {
+            @Html.ActionLink("Edit", "Edit", new { id = Model.ActionId });
+            <span>&nbsp;</span>
+        }
+        if (user != null)
+        {
+            bool isAdmin = (user.Role == AccountRole.Admin);
+            bool isAgent = (user.Role == AccountRole.Agent);
+            bool isOwner = (user.AccountId == Model.AccountId);
+            if (isQuestion)
+            {
+                if ((Model as Question).IsLocked && (isAdmin || isAgent))
+                {
+                    @Html.ActionLink("Unlock", "ToggleQuestionLock", new { id = Model.ActionId, value = !(Model as Question).IsLocked })
+                }
+                if (!(Model as Question).IsLocked && (isAdmin || isAgent || isOwner))
+                {
+                    @Html.ActionLink("Lock", "ToggleQuestionLock", new { id = Model.ActionId, value = !(Model as Question).IsLocked })
+                }
+            }
+            if (isAdmin)
+            {
+                <span>&nbsp;</span>
+                @Html.ActionLink("Delete", "Delete", new { id = Model.ActionId })
+            }
+        }
+
+    }
+</div>
+@Html.ActionLink("Sort by Time", "Sort", new { id = Model.ActionId, type = SortTypes.Time })
+&nbsp;
+@Html.ActionLink("Sort by Votes", "Sort", new { id = Model.ActionId, type = SortTypes.Votes })
+
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(Response => Response.Author.Username)
+        </th>
+        <th>
+            @Html.DisplayNameFor(Response => Response.CreatedAt)
+        </th>
+        <th>
+            @Html.DisplayNameFor(Response => Response.Text)
+        </th>
+        <th>
+            Upvotes
+        </th>
+        <th>
+            Downvotes
+        </th>
+        <th></th>
+    </tr>
+    @{ 
+        foreach (var response in responses)
+        {
+    <tr>
+        <td>
+            @response.Author.Username
+        </td>
+        <td>
+            @response.CreatedAt
+        </td>
+        <td>
+            @Html.ActionLink(response.Text, "Question", new { id = response.ActionId })
+        </td>
+        <td>
+            @response.Upvotes
+        </td>
+        <td>
+            @response.Downvotes
+        </td>
+
+        @if (user != null)
+        {
+            <td>
+                <a href="@Url.Action("Vote", new { value = true, id = response.ActionId })"><img height="20px" src="~/Content/upvote_icon.png" /></a>
+                <a href="@Url.Action("Vote", new { value = false, id = response.ActionId })"><img height="20px" src="~/Content/downvote_icon.png" /></a>
+            </td>
+        }
+    </tr>
+            }
+        }
+</table>

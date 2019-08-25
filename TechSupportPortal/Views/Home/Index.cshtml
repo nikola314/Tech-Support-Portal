@@ -1,0 +1,96 @@
+﻿@model IEnumerable<TechSupportPortal.Models.Question>
+@using TechSupportPortal.Models;
+@{
+    ViewBag.Title = "Questions";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var user = Session["user"] as Account;
+}
+
+<h2>Questions</h2>
+
+<p>
+    @if (user != null)
+    {
+        @Html.ActionLink("Create New", "Create")
+    }
+</p>
+<p>
+    <form method="get" action="~/">
+        <div class="form-group">
+            <label for="exampleSelect1">Category</label>
+            <select class="form-control" name="category" id="categorySelect">
+                <option value="all">All Categories</option>
+                @{
+                    var categories = ViewBag.categories;
+                    foreach (var category in categories)
+                    {
+                        <option value="@category.Name">@category.Name</option>
+                    }
+                }
+            </select>
+            <input type="submit" value="Filter" class="btn btn-default" />
+        </div>
+    </form>
+    <form method="get" action="~/">
+        <input type="text" placeholder="Search.." name="search"/>
+        <input type="submit" value="Search" class="btn btn-default"/>
+    </form>
+    @{
+        if (user != null)
+        {
+            @Html.ActionLink("Show only my questions", "Index", new { category = Request.QueryString["category"], ofUser = user.AccountId });
+        }
+    }
+</p>
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.Author.FirstName)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.CreatedAt)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Title)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.IsLocked)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Category.Name)
+        </th>
+        <th></th>
+    </tr>
+
+@foreach (var item in Model) {
+     
+    string locked = "";
+    if (item.IsLocked)
+    {
+        locked = "locked";
+    }
+    else
+    {
+        locked = "unlocked";
+    }
+    
+    <tr class="@locked">
+        <td>
+            @Html.DisplayFor(modelItem => item.Author.FirstName)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.CreatedAt)
+        </td>
+        <td>
+            @Html.ActionLink(Html.DisplayFor(modelItem => item.Title).ToString(), "Question/"+item.ActionId)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.IsLocked)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.Category.Name)
+        </td>
+    </tr>
+}
+
+</table>
