@@ -1,14 +1,21 @@
 ﻿@model IEnumerable<TechSupportPortal.Models.Channel>
+@using TechSupportPortal.Models;
 
 @{
     ViewBag.Title = "Index";
     Layout = "~/Views/Shared/_Layout.cshtml";
+    var user = Session["user"] as Account;
 }
 
 <h2>Index</h2>
 
 <p>
-    @Html.ActionLink("Create New", "Create")
+    @{
+        if (user.Role == AccountRole.Client)
+        {
+            @Html.ActionLink("Create New", "Create")
+        }
+    }
 </p>
 <table class="table">
     <tr>
@@ -24,16 +31,21 @@
         <th>
             @Html.DisplayNameFor(model => model.IsOpen)
         </th>
+        @if(user.Role == AccountRole.Agent)
+        {
+            <th>Join/Leave</th>
+        }
         <th></th>
     </tr>
 
-@foreach (var item in Model) {
+@foreach (var item in Model)
+{
     <tr>
         <td>
             @Html.DisplayFor(modelItem => item.Account.FirstName)
         </td>
         <td>
-            @Html.DisplayFor(modelItem => item.Name)
+            @Html.ActionLink(item.Name, "Index", "Home", new { channel = item.ChannelId }, null)
         </td>
         <td>
             @Html.DisplayFor(modelItem => item.CreatedAt)
@@ -41,11 +53,26 @@
         <td>
             @Html.DisplayFor(modelItem => item.IsOpen)
         </td>
-        <td>
-            @Html.ActionLink("Edit", "Edit", new { id=item.ChannelId }) |
-            @Html.ActionLink("Details", "Details", new { id=item.ChannelId }) |
-            @Html.ActionLink("Delete", "Delete", new { id=item.ChannelId })
-        </td>
+        @{
+            if (user.Role == AccountRole.Agent)
+            {
+                string text = "Join";
+                List<Channel> channels = ViewBag.channels;
+                if (channels.Find(e => e.ChannelId == item.ChannelId) != null)
+                {
+                    text = "Leave";
+                }
+                <td>
+                    @Html.ActionLink(text, "ToggleJoinLeaveChannel", new { channelId = item.ChannelId })
+                </td>
+            }
+            if (user.Role == AccountRole.Client)
+            {
+                <td>
+                    @Html.ActionLink("Close", "CloseChannel", new { channelId = item.ChannelId })
+                </td>
+            }
+        }
     </tr>
 }
 

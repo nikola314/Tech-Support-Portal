@@ -8,7 +8,7 @@
 <h2>Index</h2>
 
 <p>
-    @Html.ActionLink("Create New", "Create")
+    @Html.ActionLink("Create New Agent", "CreateAgent")
 </p>
 <table class="table">
     <tr>
@@ -23,9 +23,6 @@
         </th>
         <th>
             @Html.DisplayNameFor(model => model.Username)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Password)
         </th>
         <th>
             @Html.DisplayNameFor(model => model.Tokens)
@@ -54,9 +51,6 @@
             @Html.DisplayFor(modelItem => item.Username)
         </td>
         <td>
-            @Html.DisplayFor(modelItem => item.Password)
-        </td>
-        <td>
             @Html.DisplayFor(modelItem => item.Tokens)
         </td>
         <td>
@@ -66,9 +60,7 @@
             @Html.DisplayFor(modelItem => item.Status)
         </td>
         <td>
-            @Html.ActionLink("Edit", "Edit", new { id=item.AccountId }) |
-            @Html.ActionLink("Details", "Details", new { id=item.AccountId }) |
-            @Html.ActionLink("Delete", "Delete", new { id=item.AccountId })
+            @Html.ActionLink("Edit", "Edit", new { id=item.AccountId }) 
         </td>
     </tr>
 }

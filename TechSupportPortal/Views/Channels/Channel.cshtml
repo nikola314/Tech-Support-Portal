@@ -1,0 +1,106 @@
+﻿@model IEnumerable<TechSupportPortal.Models.Question>
+@using TechSupportPortal.Models;
+@{
+    ViewBag.Title = "Questions";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var user = Session["user"] as Account;
+}
+
+<h2>Questions</h2>
+
+<p>
+    @if (user != null)
+    {
+        @Html.ActionLink("Create New", "Create")
+    }
+</p>
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.Author.FirstName)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.CreatedAt)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Title)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.IsLocked)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Category.Name)
+        </th>
+        <th></th>
+    </tr>
+
+@foreach (var item in Model) {
+     
+    string locked = "";
+    if (item.IsLocked)
+    {
+        locked = "locked";
+    }
+    else
+    {
+        locked = "unlocked";
+    }
+    
+    <tr class="@locked">
+        <td>
+            @Html.DisplayFor(modelItem => item.Author.FirstName)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.CreatedAt)
+        </td>
+        <td>
+            @Html.ActionLink(Html.DisplayFor(modelItem => item.Title).ToString(), "Question/"+item.ActionId)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.IsLocked)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.Category.Name)
+        </td>
+    </tr>
+}
+
+</table>
+
+<div>
+    <ul class="pagination">
+        @if (ViewBag.page > 1)
+        {
+            <li class="page-item disabled">
+                <a class="page-link" href="@Url.Action("Index",new {page = ViewBag.page-1, id = ViewBag.id })">&laquo;</a>
+            </li>
+        }
+        @{
+            for (int i = ViewBag.page - 2; i <= ViewBag.page + 2; i++)
+            {
+                if (i > 0 && (i * Util.ITEMS_PER_PAGE - Util.ITEMS_PER_PAGE < ViewBag.count))
+                {
+                    if (i == ViewBag.page)
+                    {
+                        <li class="page-item active">
+                            <a class="page-link" href="#">@i</a>
+                        </li>
+                    }
+                    else
+                    {
+                        <li class="page-item">
+                            <a class="page-link" href="@Url.Action("Channel",new {page=i, id = ViewBag.id })">@i</a>
+                        </li>
+                    }
+                }
+            }
+        }
+        @if ((ViewBag.page + 1) * Util.ITEMS_PER_PAGE - Util.ITEMS_PER_PAGE < ViewBag.count)
+        {
+            <li class="page-item">
+                <a class="page-link" href="@Url.Action("Channel",new {page=ViewBag.page+1, id = ViewBag.id})">&raquo;</a>
+            </li>
+        }
+
+    </ul>
+</div>

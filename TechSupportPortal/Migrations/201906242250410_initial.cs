@@ -58,7 +58,7 @@ namespace TechSupportPortal.Migrations
                 .PrimaryKey(t => t.ActionId)
                 .ForeignKey("dbo.Categories", t => t.CategoryId, cascadeDelete: false)
                 .ForeignKey("dbo.Accounts", t => t.AccountId, cascadeDelete: false)
-                .ForeignKey("dbo.Actions", t => t.ActionRespToId, cascadeDelete: true)
+                .ForeignKey("dbo.Actions", t => t.ActionRespToId, cascadeDelete: false)
                 .Index(t => t.AccountId)
                 .Index(t => t.CategoryId)
                 .Index(t => t.ActionRespToId);

@@ -21,15 +21,18 @@
 
     <p class="lead">@Html.DisplayFor(model => model.Text)</p>
     <hr class="my-4">
-    @if (user != null && ((isQuestion && (Model as Question).IsLocked == false) || !isQuestion))
-    {
-        <form method="post" action="~/Home/ReplyToQuestion">
-            <div class="form-group">
-                <textarea class="form-contl" rows="3" name="ResponseText" placeholder="Reply..." id="inputDefault" style="width:100%;"></textarea>
-                <button type="submit" class="btn btn-primary" style="float:right;">Reply</button>
-                <input type="text" hidden name="RespondingTo" value="@Model.ActionId" />
-            </div>
-        </form>
+    @if (ViewBag.canReply)
+    {  
+        if (user != null && ((isQuestion && (Model as Question).IsLocked == false) || !isQuestion))
+        {
+            <form method="post" action="~/Home/ReplyToQuestion">
+                <div class="form-group">
+                    <textarea class="form-contl" rows="3" name="ResponseText" placeholder="Reply..." id="inputDefault" style="width:100%;"></textarea>
+                    <button type="submit" class="btn btn-primary" style="float:right;">Reply</button>
+                    <input type="text" hidden name="RespondingTo" value="@Model.ActionId" />
+                </div>
+            </form>
+        }
     }
     @{
         if (user != null && user.AccountId == Model.AccountId)

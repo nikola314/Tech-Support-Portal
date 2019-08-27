@@ -54,6 +54,10 @@
       
         <div class="form-group">
             <div class="col-md-offset-2 col-md-10">
+                @if (ViewBag.channel != null)
+                {
+                    <input hidden type="number" value="@ViewBag.channel" name="channel" />
+                }
                 <input type="submit" value="Create" class="btn btn-default" />
             </div>
         </div>

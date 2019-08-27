@@ -16,7 +16,7 @@ namespace TechSupportPortal
         public DbSet<Category> Categories { get; set; }
         public DbSet<Channel> Channels { get; set; }
         public DbSet<Order> Orders { get; set; }
-
+        public DbSet<Pack> Packs { get; set; }
 
         public MyDbContext() : base("myContext")
         {
@@ -31,7 +31,7 @@ namespace TechSupportPortal
                .WithMany(c => c.Agents)
                .Map(cs =>
                {
-                   cs.MapLeftKey("AgentId");
+                   cs.MapLeftKey("AccountId");
                    cs.MapRightKey("ChannelId");
                    cs.ToTable("AgentChannels");
                });

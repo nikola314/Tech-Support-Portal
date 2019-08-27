@@ -9,40 +9,61 @@ using TechSupportPortal.Models;
 
 namespace TechSupportPortal.Controllers
 {
+    
     public class HomeController : Controller
     {
         private MyDbContext db = new MyDbContext();
 
-        public ActionResult Index(string category = null, int? ofUser = null, string search = null)
+        public ActionResult Index(string category = null, int? ofUser = null, string search = null, int? page = 1, int? channel = null)
         {
-            List<Question> questions;
-            var categoryFilter = db.Categories.Where(c => c.Name == category).FirstOrDefault();
-            if (category == "all") categoryFilter = null;
-            var userFilter = db.Accounts.Where(a => a.AccountId == ofUser).FirstOrDefault();
-            if (categoryFilter != null)
+            List<Question> questions = new List<Question>();
+            if (channel == null)
             {
-                questions = categoryFilter.Questions.ToList();
+                var categoryFilter = db.Categories.Where(c => c.Name == category).FirstOrDefault();
+                if (category == "all") categoryFilter = null;
+                var userFilter = db.Accounts.Where(a => a.AccountId == ofUser).FirstOrDefault();
+                if (categoryFilter != null)
+                {
+                    questions = categoryFilter.Questions.ToList().Where(a=>a.Channels.Count == 0).ToList();
+                }
+                else
+                {
+                    questions = db.Actions.OfType<Question>().Include(a=>a.Channels).Where(a=>a.Channels.Count == 0).ToList();
+                }
+
+                if (search != null)
+                {
+                    questions = questions.Where(q => (q.Title.Contains(search ?? "") || q.Text.Contains(search ?? "") || q.Author.Username.Contains(search ?? ""))).ToList();
+                }
+
+                if (ofUser != null)
+                {
+                    questions = questions.Where(q => q.AccountId == ofUser).ToList();
+                }
             }
             else
             {
-                questions = db.Actions.OfType<Question>().ToList();
+                // TODO: Check if current user can access this page ( bulletproof)
+                // QUESTIONS OF A CHANNEL
+                questions = db.Channels.Where(c => c.ChannelId == channel).Include(c => c.Questions).FirstOrDefault().Questions.ToList();
+                var ch = db.Channels.Where(c => c.ChannelId == channel).FirstOrDefault();
+                ViewBag.owner = ch.AccountId;
+                ViewBag.channelName = ch.Name;
             }
+            ViewBag.count = questions.Count();
+            questions = questions.Skip(((page ?? 1) - 1) * Util.ITEMS_PER_PAGE).Take(Util.ITEMS_PER_PAGE).ToList();
 
-            if(search!= null)
-            {
-                questions = questions.Where(q => (q.Title.Contains(search ?? "") || q.Text.Contains(search ?? "") || q.Author.Username.Contains(search ?? ""))).ToList();
-            }
-
-            if (ofUser != null)
-            {
-                questions = questions.Where(q => q.AccountId == ofUser).ToList();
-            }
+            ViewBag.channel = channel;
+            ViewBag.page = page;
             ViewBag.categories = db.Categories.ToList();
+            ViewBag.category = category;
+            ViewBag.ofUser = ofUser;
+            ViewBag.search = search;
 
             return View(questions);
         }
 
-        public ActionResult Question(int? id, SortTypes? sort=null)
+        public ActionResult Question(int? id, SortTypes? sort=null, int? channel= null)
         {
             if(sort!= null)
             {
@@ -59,7 +80,16 @@ namespace TechSupportPortal.Controllers
             {
                 ViewBag.Responses = db.Actions.OfType<Response>().Where(r => r.RespondingTo.ActionId == id).ToList();
             }
-            
+            ViewBag.canReply = true;
+            if(channel != null)
+            {
+                var user = Session["user"] as Account;
+                if(user.Role!= AccountRole.Client)
+                {
+                    var ch = db.Channels.Where(c => c.ChannelId == channel).Include(c => c.Agents).FirstOrDefault();
+                    ViewBag.canReply = ch.Agents.ToList().Find(u => u.AccountId == user.AccountId) != null;
+                }              
+            }          
             Models.Action a = db.Actions.Find(id) as Models.Action;
             return View(a);
         }
@@ -126,10 +156,11 @@ namespace TechSupportPortal.Controllers
         }
 
         // GET: Questions/Create
-        public ActionResult Create()
+        public ActionResult Create(int? channel = null)
         {
             ViewBag.ActionId = new SelectList(db.Actions, "ActionId", "Text");
             ViewBag.CategoryId = new SelectList(db.Categories, "CategoryId", "Name");
+            ViewBag.channel = channel;
             return View();
         }
 
@@ -138,14 +169,18 @@ namespace TechSupportPortal.Controllers
         // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Include = "ActionId,Text,AccountId,CreatedAt,Title,Image,CategoryId,IsLocked,LastLockedAt")] Question question)
+        public ActionResult Create([Bind(Include = "ActionId,Text,AccountId,CreatedAt,Title,Image,CategoryId,IsLocked,LastLockedAt")] Question question, int? channel=null)
         {
             question.AccountId = (Session["user"] as Account).AccountId;
             question.CreatedAt = DateTime.Now;
 
             if (ModelState.IsValid)
-            {
+            {            
                 db.Actions.Add(question);
+                if (channel != null)
+                {
+                    db.Channels.Where(c => c.ChannelId == channel).Include(c => c.Questions).FirstOrDefault().Questions.Add(question);
+                }              
                 db.SaveChanges();
                 return RedirectToAction("Index");
             }

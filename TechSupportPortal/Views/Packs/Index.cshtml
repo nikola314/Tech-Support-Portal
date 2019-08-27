@@ -1,0 +1,46 @@
+﻿@model IEnumerable<TechSupportPortal.Models.Pack>
+
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Token packs</h2>
+
+<table class="table">
+    <tr>
+        <th>Pack</th>
+        <th>
+            @Html.DisplayNameFor(model => model.Price)
+        </th>
+        <th></th>
+    </tr>
+
+@foreach (var item in Model) {
+    <tr>
+        <td>
+            @{
+                if (item.PackId == 1)
+                {
+                    <span>Silver</span>
+                }
+                else if (item.PackId == 2)
+                {
+                    <span>Gold</span>
+                }
+                else
+                {
+                    <span>Platinum</span>
+                }
+            }
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.Price)
+        </td>
+        <td>
+            @Html.ActionLink("Edit", "Edit", new { id=item.PackId })
+        </td>
+    </tr>
+}
+
+</table>

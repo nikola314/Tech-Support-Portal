@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Entity;
+using System.Data.Entity.Validation;
 using System.Linq;
 using System.Net;
 using System.Web;
@@ -23,19 +24,75 @@ namespace TechSupportPortal.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            List<Channel> channels = null;
+            List<Channel> ch = null;
             var userWithChannels = db.Accounts.Include(p => p.AgentChannels).Include(p => p.UserChannels).Where(a => a.AccountId == user.AccountId).FirstOrDefault();
             if (user.Role == AccountRole.Client)
             {
-                channels = userWithChannels.UserChannels.ToList();
+                ch = userWithChannels.UserChannels.Where(c=> c.IsOpen==true).ToList();
             }
             else if(user.Role == AccountRole.Agent)
             {
-                channels = userWithChannels.AgentChannels.ToList();
+                //channels = userWithChannels.AgentChannels.ToList();
+                ch = db.Channels.Include(c => c.Questions).Include(c=>c.Agents).Where(c=>c.IsOpen==true).ToList();
             }
-            
-            return View(channels);
+            // For agent joining and leaving channels
+            ViewBag.channels = user.AgentChannels.ToList();
+            return View(ch);
         }
+
+        public ActionResult ToggleJoinLeaveChannel(int? channelId)
+        {
+            var user = Session["user"] as Account;
+            if (user.Role != AccountRole.Agent) return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+
+            Channel channel = db.Channels.Include(ca => ca.Agents).Where(ca => ca.ChannelId == channelId).FirstOrDefault();
+            
+            var usr = db.Accounts.Where(a => a.AccountId == user.AccountId).Include(a => a.AgentChannels).FirstOrDefault();
+            if (channel.Agents.Contains(usr))
+            {
+                // Leave
+                usr.AgentChannels.Remove(channel);
+                channel.Agents.Remove(usr);
+            }
+            else
+            {
+                // Join
+                usr.AgentChannels.ToList().Add(channel);
+                channel.Agents.Add(usr);
+            }                  
+            db.SaveChanges();
+           db.Entry(channel).Reload();
+            db.Entry(usr).Reload();
+
+            Session["user"] = usr;
+            return RedirectToAction("Index");
+        }
+
+        public ActionResult CloseChannel(int? channelId)
+        {
+            var user = Session["user"] as Account;
+            var channel = db.Channels.Find(channelId);
+            if(user.AccountId == channel.AccountId)
+            {
+                channel.IsOpen = false;
+                db.Entry(channel).State = EntityState.Modified;
+                db.SaveChanges();
+            }
+            return RedirectToAction("Index");
+        }
+
+        public ActionResult Channel(int? id, int? page = 1)
+        {
+            var questions = db.Channels.Where(c => c.ChannelId == id).Include(c => c.Questions).FirstOrDefault().Questions;
+
+            ViewBag.count = questions.Count();
+
+            
+            ViewBag.id = id;
+            return View(questions); // TODO: pass questionlist as argument
+        }
+
+
 
         // GET: Channels/Details/5
         public ActionResult Details(int? id)
