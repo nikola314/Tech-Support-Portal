@@ -169,10 +169,16 @@ namespace TechSupportPortal.Controllers
         // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Include = "ActionId,Text,AccountId,CreatedAt,Title,Image,CategoryId,IsLocked,LastLockedAt")] Question question, int? channel=null)
+        public ActionResult Create([Bind(Include = "ActionId,Text,AccountId,CreatedAt,Title,CategoryId,IsLocked,LastLockedAt")] Question question, int? channel=null, HttpPostedFileBase imageFile = null)
         {
             question.AccountId = (Session["user"] as Account).AccountId;
             question.CreatedAt = DateTime.Now;
+
+            if(imageFile != null && imageFile.ContentLength > 0)
+            {
+                question.Image = new byte[imageFile.ContentLength];
+                imageFile.InputStream.Read(question.Image, 0, imageFile.ContentLength);
+            }
 
             if (ModelState.IsValid)
             {            

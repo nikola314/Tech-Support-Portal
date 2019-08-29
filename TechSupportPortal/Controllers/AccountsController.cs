@@ -74,6 +74,11 @@ namespace TechSupportPortal.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult CreateAgent([Bind(Include = "AccountId,FirstName,LastName,Mail,Username,Password,ConfirmPassword")] Account account)
         {
+            var user = Session["user"] as Account;
+            if (user == null || user.Role != AccountRole.Admin)
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            }
             account.Role = AccountRole.Agent;
             account.Status = AccountStatus.Active;
             account.Tokens = 0;
@@ -221,6 +226,11 @@ namespace TechSupportPortal.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult Edit([Bind(Include = "AccountId,Password, ConfirmPassword,FirstName,LastName,Mail,Username,Tokens,Role,Status")] Account account)
         {
+            var user = Session["user"] as Account;
+            if (user == null  || user.Role != AccountRole.Admin)
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            }
             //account.ConfirmPassword = account.Password;
             if (ModelState.IsValid)
             {
@@ -234,6 +244,11 @@ namespace TechSupportPortal.Controllers
         // GET: Accounts/Delete/5
         public ActionResult Delete(int? id)
         {
+            var user = Session["user"] as Account;
+            if (user == null || id == null || user.Role != AccountRole.Admin)
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            }
             if (id == null)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
@@ -251,6 +266,11 @@ namespace TechSupportPortal.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult DeleteConfirmed(int id)
         {
+            var user = Session["user"] as Account;
+            if (user == null || id == null || user.Role != AccountRole.Admin)
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            }
             Account account = db.Accounts.Find(id);
             db.Accounts.Remove(account);
             db.SaveChanges();

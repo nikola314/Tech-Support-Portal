@@ -1,14 +1,21 @@
 ﻿@model TechSupportPortal.Models.Account
+@using TechSupportPortal.Models;
 
 @{
     ViewBag.Title = "Details";
     Layout = "~/Views/Shared/_Layout.cshtml";
+    var user  = Session["user"] as Account;
 }
 
 <h2>Details</h2>
 
 <div>
-    <h4>Account</h4>
+    @if (user != null && user.Role == AccountRole.Client)
+    {
+        @Html.ActionLink("Buy Tokens", "Create", "Orders");
+        
+        @Html.ActionLink("My Orders", "Index", "Orders");
+    }
     <hr />
     <dl class="dl-horizontal">
         <dt>

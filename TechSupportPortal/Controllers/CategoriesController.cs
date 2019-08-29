@@ -65,6 +65,11 @@ namespace TechSupportPortal.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult Create([Bind(Include = "CategoryId,Name")] Category category)
         {
+            var user = Session["user"] as Account;
+            if (user == null  || user.Role != AccountRole.Admin)
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            }
             if (ModelState.IsValid)
             {
                 db.Categories.Add(category);
@@ -102,6 +107,11 @@ namespace TechSupportPortal.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult Edit([Bind(Include = "CategoryId,Name")] Category category)
         {
+            var user = Session["user"] as Account;
+            if (user == null || user.Role != AccountRole.Admin)
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            }
             if (ModelState.IsValid)
             {
                 db.Entry(category).State = EntityState.Modified;
@@ -136,6 +146,11 @@ namespace TechSupportPortal.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult DeleteConfirmed(int id)
         {
+            var user = Session["user"] as Account;
+            if (user == null || user.Role != AccountRole.Admin)
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            }
             Category category = db.Categories.Find(id);
             db.Categories.Remove(category);
             db.SaveChanges();

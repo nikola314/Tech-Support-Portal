@@ -1,17 +1,20 @@
 ﻿@model IEnumerable<TechSupportPortal.Models.Pack>
 
 @{
-    ViewBag.Title = "Index";
+    ViewBag.Title = "Prices";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h2>Token packs</h2>
+<h2>Prices</h2>
 
 <table class="table">
     <tr>
-        <th>Pack</th>
+        <th>Service</th>
         <th>
             @Html.DisplayNameFor(model => model.Price)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model=>model.Amount)
         </th>
         <th></th>
     </tr>
@@ -28,14 +31,24 @@
                 {
                     <span>Gold</span>
                 }
-                else
+                else if(item.PackId == 3)
                 {
                     <span>Platinum</span>
+                }
+                else
+                {
+                    <span>Opening new channel</span>
                 }
             }
         </td>
         <td>
             @Html.DisplayFor(modelItem => item.Price)
+        </td>
+        <td>
+            @if (item.PackId < 4)
+            {
+                @Html.DisplayFor(modelItem => item.Amount)
+            }
         </td>
         <td>
             @Html.ActionLink("Edit", "Edit", new { id=item.PackId })

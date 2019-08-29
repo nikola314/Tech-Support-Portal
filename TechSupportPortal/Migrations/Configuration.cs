@@ -60,9 +60,9 @@ namespace TechSupportPortal.Migrations
                 Tokens = 0,
                 Username = "dimec"
             });
-            db.Packs.Add(new Models.Pack { packName = Models.TokenPack.S, Price = 10 });
-            db.Packs.Add(new Models.Pack { packName = Models.TokenPack.G, Price = 30 });
-            db.Packs.Add(new Models.Pack { packName = Models.TokenPack.P, Price = 100 });
+            db.Packs.Add(new Models.Pack { packName = Models.TokenPack.S, Price = 10, Amount = 10 });
+            db.Packs.Add(new Models.Pack { packName = Models.TokenPack.G, Price = 30 , Amount = 30});
+            db.Packs.Add(new Models.Pack { packName = Models.TokenPack.P, Price = 100, Amount = 100 });
         }
     }
 }

@@ -7,7 +7,7 @@ using System.Web;
 
 namespace TechSupportPortal.Models
 {
-    public enum TokenPack { S, G, P }
+    public enum TokenPack { S=1, G=2, P=3 }
 
     public class Order
     {

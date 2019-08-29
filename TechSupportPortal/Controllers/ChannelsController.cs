@@ -121,11 +121,23 @@ namespace TechSupportPortal.Controllers
         // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Include = "ChannelId,Name,CreatedAt,AccountId,IsOpen")] Channel channel)
+        public ActionResult Create([Bind(Include = "ChannelId,Name,CreatedAt")] Channel channel)
         {
-            if (ModelState.IsValid)
+            var user = Session["user"] as Account;
+            if(user == null || user.Role!= AccountRole.Client)
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            }
+            channel.AccountId = user.AccountId;
+            channel.IsOpen = true;
+            var price = db.Packs.Where(p => p.Amount == -1).FirstOrDefault().Price;
+            if (ModelState.IsValid && user.Tokens>price)
             {
                 db.Channels.Add(channel);
+                user.Tokens = user.Tokens - price;
+                user.ConfirmPassword = user.Password;
+                db.Entry(user).State = EntityState.Modified;
+
                 db.SaveChanges();
                 return RedirectToAction("Index");
             }

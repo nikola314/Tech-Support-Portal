@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Entity;
+using System.Data.Entity.Validation;
 using System.Linq;
 using System.Net;
 using System.Web;
@@ -18,8 +19,13 @@ namespace TechSupportPortal.Controllers
         // GET: Orders
         public ActionResult Index()
         {
-            var orders = db.Orders.Include(o => o.Account);
-            return View(orders.ToList());
+            var user = Session["user"] as Account;
+            if(user == null || user.Role!= AccountRole.Client)
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            }
+            var orders = db.Accounts.Include(a => a.Orders).Where(a => a.AccountId == user.AccountId).FirstOrDefault().Orders; 
+            return View(orders);
         }
 
         // GET: Orders/Details/5
@@ -40,7 +46,13 @@ namespace TechSupportPortal.Controllers
         // GET: Orders/Create
         public ActionResult Create()
         {
-            ViewBag.AccountId = new SelectList(db.Accounts, "AccountId", "FirstName");
+            var user = Session["user"] as Account;
+            if(user==null || user.Role!= AccountRole.Client)
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            }
+
+            ViewBag.TokenPacks = db.Packs.ToList();
             return View();
         }
 
@@ -49,17 +61,20 @@ namespace TechSupportPortal.Controllers
         // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Include = "OrderId,AccountId,TokenPack,Quantity,Price")] Order order)
+        public ActionResult Create([Bind(Include = "OrderId,TokenPack,Quantity")] Order order)
         {
-            if (ModelState.IsValid)
+            var user = Session["user"] as Account;
+            if (user == null || user.Role != AccountRole.Client)
             {
-                db.Orders.Add(order);
-                db.SaveChanges();
-                return RedirectToAction("Index");
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
+            var pack = db.Packs.Where(p => p.PackId == (int)order.TokenPack).FirstOrDefault();
+            order.Price = pack.Price * order.Quantity;
+            order.AccountId = user.AccountId;
+            Session["orderToCreate"] = order;
+            // TODO: PAYPAL
+            return RedirectToAction("PaymentWithPaypal", "Paypal");
 
-            ViewBag.AccountId = new SelectList(db.Accounts, "AccountId", "FirstName", order.AccountId);
-            return View(order);
         }
 
         // GET: Orders/Edit/5
