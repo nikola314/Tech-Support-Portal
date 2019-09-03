@@ -1,0 +1,47 @@
+﻿
+@{
+    ViewBag.Title = "Modifikacija";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Modifikacija</h2>
+
+<table class="table">
+    <tr>
+        <th>Service</th>
+        <th>
+            Type
+        </th>
+        <th>
+            Count
+        </th>
+        <th></th>
+    </tr>
+
+
+
+    <tr>
+        <td>
+            <span>Clients</span>
+        </td>
+        <td>@ViewBag.clients</td>
+    </tr>
+    <tr>
+        <td>
+            <span>Agents</span>
+        </td>
+        <td>@ViewBag.agents</td>
+    </tr>
+    <tr>
+        <td>
+            <span>Admins</span>
+        </td>
+        <td>1</td>
+    </tr>
+    <tr>
+        <td>
+            <span>Money earned</span>
+        </td>
+        <td>@ViewBag.sum</td>
+    </tr>
+</table>

@@ -14,6 +14,30 @@ namespace TechSupportPortal.Controllers
     {
         private MyDbContext db = new MyDbContext();
 
+        public ActionResult Modifikacija()
+        {
+            var user = Session["user"] as Account;
+            if(user==null || user.Role!= AccountRole.Admin)
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            }
+            var clients = db.Accounts.Where(a => a.Role == AccountRole.Client).Count();
+            var agents = db.Accounts.Where(a => a.Role == AccountRole.Agent).Count();
+            ViewBag.clients = clients;
+            ViewBag.agents = agents;
+
+            var orders = db.Orders.ToList();
+            var sum = 0;
+            foreach(var order in orders)
+            {
+                sum += order.Price;
+            }
+            ViewBag.sum = sum;
+
+            return View();
+        }
+
+
         public ActionResult Index(string category = null, int? ofUser = null, string search = null, int? page = 1, int? channel = null)
         {
             List<Question> questions = new List<Question>();
@@ -30,10 +54,25 @@ namespace TechSupportPortal.Controllers
                 {
                     questions = db.Actions.OfType<Question>().Include(a=>a.Channels).Where(a=>a.Channels.Count == 0).ToList();
                 }
-
+                if (search == "") search = null;
                 if (search != null)
                 {
-                    questions = questions.Where(q => (q.Title.Contains(search ?? "") || q.Text.Contains(search ?? "") || q.Author.Username.Contains(search ?? ""))).ToList();
+                    var terms = search.Split(' ');
+                    var all = questions.ToList();
+                    var result = new List<Question>();
+                    foreach(var q in all)
+                    {
+                        foreach(var term in terms)
+                        {
+                            if(q.Title.Contains(term))
+                            {
+                                result.Add(q);
+                                break;
+                            }
+                        }
+                    }
+                    //questions = questions.Where(q => (q.Title.Contains(search ?? "") || q.Text.Contains(search ?? "") || q.Author.Username.Contains(search ?? ""))).ToList();
+                    questions = result;
                 }
 
                 if (ofUser != null)
@@ -99,6 +138,17 @@ namespace TechSupportPortal.Controllers
             var user = Session["user"] as Account;
             if (user != null)
             {
+                var questionId = int.Parse(RespondingTo);
+                var q = db.Actions.Find(questionId);
+                bool locked = false ;
+                if(q!= null)
+                {
+                    locked = (q as Question).IsLocked;
+                }
+                if (locked)
+                {
+                    return RedirectToAction("Question", new { id = int.Parse(RespondingTo) });
+                }
                 Response response = new Response();
                 response.AccountId = user.AccountId;
                 response.ActionRespToId = int.Parse(RespondingTo);
@@ -265,12 +315,14 @@ namespace TechSupportPortal.Controllers
             var user = Session["user"] as Account;
             bool isAdmin = false;
             if (user != null && user.Role == AccountRole.Admin) isAdmin = true;
+            Models.Action action = db.Actions.Where(p => p.ActionId == id).SingleOrDefault();
+            if (user.AccountId == action.AccountId) isAdmin = true;
             if (id == null || !isAdmin)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
 
-            Models.Action action = db.Actions.Where(p => p.ActionId == id).SingleOrDefault();
+            
             if (action == null)
             {
                 return HttpNotFound();

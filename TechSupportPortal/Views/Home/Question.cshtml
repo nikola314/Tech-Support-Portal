@@ -61,7 +61,7 @@
                     @Html.ActionLink("Lock", "ToggleQuestionLock", new { id = Model.ActionId, value = !(Model as Question).IsLocked })
                 }
             }
-            if (isAdmin)
+            if (isAdmin || isOwner)
             {
                 <span>&nbsp;</span>
                 @Html.ActionLink("Delete", "Delete", new { id = Model.ActionId })
